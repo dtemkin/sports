@@ -1,0 +1,14 @@
+code,name,category
+CA-AB, Alberta,province
+CA-BC, British Columbia,province
+CA-MB, Manitoba,province
+CA-NB, New Brunswick,province
+CA-NL, Newfoundland and Labrador,province
+CA-NS, Nova Scotia,province
+CA-ON, Ontario,province
+CA-PE, Prince Edward Island,province
+CA-QC, Quebec,province
+CA-SK, Saskatchewan,province
+CA-NT, Northwest Territories,territory
+CA-NU, Nunavut,territory
+CA-YT, Yukon,territory
