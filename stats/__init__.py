@@ -1,7 +1,0 @@
-'''
-@author: Dan Temkin
-@email: 
-
-
-'''
-

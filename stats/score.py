@@ -1,8 +1,22 @@
-from stats.utils import fullpath
-from pandas import read_csv, DataFrame, concat
+
+from pandas import read_csv, DataFrame, read_json, merge
 import os
 import math
-from stats.base import Data
+import numpy as np
+import plotly.graph_objs as graph
+from plotly.offline import plot
+import datetime
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
+from collections import Counter
+import json
+
+try:
+    from stats.utils import fullpath
+    from stats.base import Data
+except ImportError:
+    from utils import fullpath
+    from base import Data
 try:
     import statistics as stats
 except ImportError:
@@ -12,29 +26,47 @@ except ImportError:
 class ELO(object):
 
     def __init__(self, league, **kwargs):
+
         self.league = league.lower()
 
         self.team1 = kwargs.get("team1", "any")
         self.team2 = kwargs.get("team2", "any")
         self.startyear = kwargs.get("start", 1994)
         self.endyear = kwargs.get("end", 2017)
-        self.datafile = fullpath("../data/%s_%sVS%s_games.csv" % (self.league, self.team1, self.team2))
-        self.df = self._data()
-        self.ratings_data = []
 
-    def _data(self):
-        if os.path.isfile(self.datafile):
-            df = read_csv(self.datafile, header=0)
-            df = df.loc[self.startyear<=df["year"]]
-            dfx = df.loc[df["year"]<=self.endyear]
+        self.games_datafile = fullpath("../data/%s_%sVS%s_games.csv" % (self.league, self.team1, self.team2))
+        self.attends_datafile = fullpath("../data/%s_attendance.csv" % self.league)
+        self.ratings_data=[]
+
+        self.attendance_df = self.attendance_data()
+        self.games_df = self.games_data()
+        
+    def games_data(self):
+        if os.path.isfile(".".join([self.games_datafile,"csv"])):
+            dfx = read_csv(".".join([self.games_datafile,"csv"]))
+            dfx = dfx.loc[self.startyear <= dfx["year"]]
+            dfx = dfx.loc[dfx["year"] <= self.endyear]
             dfx.index = [i for i in range(len(dfx.index))]
+            return dfx
 
         else:
             data = Data(league=self.league)
             data.games(start=self.startyear, end=self.endyear,
                        team1=self.team1, team2=self.team2)
             dfx = data.games_data
-            self.update()
+            dfx.index = [i for i in range(len(dfx.index))]
+            return self.update_games(d=dfx)
+
+
+    def attendance_data(self):
+        if os.path.isfile(self.attends_datafile):
+            dfx = read_csv(self.attends_datafile)
+            dfx = dfx.loc[(self.startyear <= dfx["year"]) & (dfx["year"] <= self.endyear)]
+            dfx.index = [i for i in range(len(dfx.index))]
+        else:
+            data = Data(league=self.league)
+            data.attendance(start=self.startyear, end=self.endyear, save=True)
+            dfx = data.attendance_data
 
         return dfx
 
@@ -122,11 +154,11 @@ class ELO(object):
 
     def rsiK(self, team, pds=14):
 
-        if len(self.df.index) < pds:
+        if len(self.games_df.index) < pds:
             print("Insufficient number of past ratings to calculate the rsi with pd window %s" % str(pds))
         else:
-            firstpd_gains = stats.mean(self.df.loc[0:pds+1][self.df["diff"] > 0])
-            firstpd_losses = stats.mean(self.df.loc[0:pds+1][self.df["diff"] < 0])
+            firstpd_gains = stats.mean(self.games_df.loc[0:pds+1][self.games_df["diff"] > 0])
+            firstpd_losses = stats.mean(self.games_df.loc[0:pds+1][self.games_df["diff"] < 0])
             data = {"idx":[], "avggain":[], "avgloss":[], "rs":[], "rsi":[]}
             data["idx"].append(pds+1)
             data["avggain"].append(firstpd_gains)
@@ -137,9 +169,9 @@ class ELO(object):
                 data["rs"].append(float(firstpd_gains/firstpd_losses))
 
             x=1
-            while x+pds+1 <=len(self.df.index):
-                gain = (stats.mean(self.df.loc[x:x+pds-1][self.df["margin"]>0]) * pds)+data["avggain"][x-1]
-                loss = (stats.mean(self.df.loc[x:x+pds-1][self.df["margin"]<0]) * pds)+data["avgloss"][x-1]
+            while x+pds+1 <=len(self.games_df.index):
+                gain = (stats.mean(self.games_df.loc[x:x+pds-1][self.games_df["margin"]>0]) * pds)+data["avggain"][x-1]
+                loss = (stats.mean(self.games_df.loc[x:x+pds-1][self.games_df["margin"]<0]) * pds)+data["avgloss"][x-1]
                 rs = float(gain/loss)
                 rsi = 100 - (100/1+float(rs))
 
@@ -163,8 +195,8 @@ class ELO(object):
         return expected_a, expected_b
 
     def get_last_local(self, team):
-        home = self.df.loc[self.df["home_teamname"]==team]
-        away = self.df.loc[self.df["away_teamname"]==team]
+        home = self.games_df.loc[self.games_df["home_teamname"]==team]
+        away = self.games_df.loc[self.games_df["away_teamname"]==team]
 
 
         lasthome = [i for i in home.index]
@@ -198,15 +230,172 @@ class ELO(object):
                                                                                          matchup_dict["away_endelo"], matchup_dict["away_prob"]))
 
 
-    def update(self):
-
-        games = self.df.to_dict("index")
+    def update_games(self, d):
+        games = d.to_dict("index")
         for i in range(len(games)):
             new_game = self.adjust_ratings(ID=i, gameinfo=games[i])
             self.ratings_data.append(new_game)
+
             print("%s %% Completed." % round((i / len(games) * 100), 4))
         dfx = DataFrame(self.ratings_data)
-        dfx.to_csv(self.datafile)
-        print("Ratings Updated.")
+        
+        dfx.index.name = "index"
+        dfx.to_csv(".".join([self.games_datafile,"csv"]))
+        dfx.to_json(".".join([self.games_datafile, "json"]), orient="index", date_format="iso")
+        return dfx
 
+        print("Ratings Updated.")
+    
+    def get_teams_by_year(self, year=2017):
+        teams = [i for i in np.unique(self.games_df["home_teamname"][self.games_df["year"]==year])]
+        return teams
+
+    def get_team_elos(self, team, years=None):
+        teamx = self.games_df[(self.games_df["home_teamname"]==team) | (self.games_df["away_teamname"]==team)].dropna()
+        team_elos = []
+        for i in teamx.index:
+            if teamx.loc[i]["home_teamname"]==team:
+                if years is not None:
+                    if type(years) is list:
+                        if teamx.loc[i]["year"] in range(years[0], years[len(years)-1]):
+
+                            team_elos.append((teamx.loc[i]["year"], teamx.loc[i]["game_date"], teamx.loc[i]["home_endelo"]))
+                        else:
+                            pass
+                    elif type(years) is int:
+                        if teamx.loc[i]["year"] in range(1993, years):
+                            team_elos.append((teamx.loc[i]["year"], teamx.loc[i]["game_date"], teamx.loc[i]["home_endelo"]))
+                        else:
+                            pass
+                    else:
+                        print("years must be list, nonetype, or int")
+                else:
+                    team_elos.append((teamx.loc[i]["year"], teamx.loc[i]["game_date"], teamx.loc[i]["home_endelo"]))
+            elif teamx.loc[i]["away_teamname"]==team:
+                team_elos.append((teamx.loc[i]["year"], teamx.loc[i]["game_date"], teamx.loc[i]["away_endelo"]))
+            
+        return team_elos
+
+    def get_team_colors(self, team):
+        grayscale_alts = ["#cccccc","#b7b7b7","#939393", "#666666"]
+        colormap = {}
+        file = fullpath("../conf/%s_team_colormap.json" % self.league)
+        
+        if os.path.isfile(file):
+            with open(file, mode='r') as f:
+                js = json.load(f)
+                for j in range(len(js)):
+                    if js[j]["team"] == team:
+                        colormap.update({"marker":js[j]["colors"][1], "line":js[j]["colors"][0]})
+                    else:
+                        pass
+                f.close()
+        else:
+            colors = Data(league=self.league).team_colors()
+            for c in range(len(colors)):
+                if colors[c]["team"] == team:
+                    try:
+                        linecolor = colors[c]["colors"][1]
+                        markercolor = colors[c]["colors"][0]
+                    except IndexError:
+                        markercolor = colors[c]["colors"][1]
+                        linecolor = np.random.choice(grayscale_alts, size=1)
+                    
+                    colormap.update({"line":linecolor, "marker":markercolor})
+        return colormap
+
+
+    
+
+    def plot(self, year):
+        print("Plotting...")
+        years = range(1994, 2017+1)
+        teams_by_year_dict = {}
+        
+        teams = self.get_teams_by_year(year=year)
+
+        traces = []
+        btns1 = [dict(args=["visible", [False]*len(teams)], label="Select Team:", method="restyle")]
+        # btns2 = [dict(args=["visible", [False]*len(teams)], label="Select Team 2:", method="restyle")]
+        base = datetime.datetime(year, 12, 31)
+        dates = [base - datetime.timedelta(days=x) for x in range(0, 365)]
+        menu = [dict(x=-.05, y=1.0, yanchor="top", buttons=btns1)]
+        for team in teams:
+
+            teamcolors = self.get_team_colors(team=team)
+
+            elo_scores = self.get_team_elos(team=team, years=[year-1, year])
+            scores = [elo_scores[x][2] for x in range(len(elo_scores))]
+            teamidx = list(filter(lambda x: teams[x]==team, [t for t in range(len(teams))]))
+            vis = [False]*len(teams)
+            vis[teamidx[0]]=True
+            trace = graph.Scatter(x=dates, y=scores,
+                mode="lines+markers",
+                line=dict(width=1.5, color=teamcolors["line"]),
+                marker=dict(color=teamcolors["marker"], size=4.0),
+                name=team.capitalize())
+            btnlabels = dict(args=["visible", vis],
+                             label=team.capitalize(),
+                             method="restyle")
+            btns1.append(btnlabels)
+            # btns2.append(btnlabels)
+            traces.append(trace)
+
+
+        data =graph.Data(traces)
+        layout = graph.Layout(title="%s Team ELO Ratings" % self.league.upper(),
+                              updatemenus=list(menu))
+        fig = graph.Figure(data=data, layout=layout)
+        return fig
+
+    def setup_predict(self, classifier, df, **kwargs):
+
+        training_size = kwargs.get("training_size", .70)
+        selection_method = kwargs.get("selection_method", "random")
+
+
+        if selection_method == "random":
+            ids = np.random.choice(df.index, size=int(training_size*len(df.index)))
+            testing_ids = list(filter(lambda x: x not in ids, self.games_df.index))
+
+        elif selection_method == "inline":
+            ids = df.loc[0:int(len(df.index)*training_size)]
+            start = int(len(self.games_df.index)*training_size)
+            testing_ids = [i for i in range(start+1, len(self.games_df.index))]
+        
+        training_df = df.loc[[i for i in ids] ,:]
+        testing_df = df.loc[[j for j in testing_ids] ,:]
+        return training_df, testing_df
+
+    def predict(self, classifier, **kwargs):
+
+
+        training_size = kwargs.get("training_size", .70)
+        selection_method = kwargs.get("selection_method", "random")
+
+
+        if selection_method == "random":
+            ids = np.random.choice(self.games_df.index, size=int(training_size*len(self.games_df.index)))
+            testing_ids = list(filter(lambda x: x not in ids, self.games_df.index))
+
+        elif selection_method == "inline":
+            ids = self.games_df.loc[0:int(len(self.games_df.index)*training_size)]
+            start = int(len(self.games_df.index)*training_size)
+            testing_ids = [i for i in range(start+1, len(self.games_df.index))]
+        
+        training_df = self.games_df.loc[[i for i in ids] ,:]
+        testing_df = self.games_df.loc[[j for j in testing_ids] ,:]
+
+        
+        trainx = training_df.loc[:, ["home_startelo","away_startelo","home_prob","away_prob"]]
+        trainy = training_df["winner"]
+
+        testx = testing_df.loc[:, ["home_startelo","away_startelo","home_prob","away_prob"]]
+        actualy = testing_df["winner"]
+
+
+        classifier.fit(X=trainx, y=trainy)
+        predicted = classifier.predict(testx)
+        accuracy = accuracy_score(actualy, predicted)
+        print(accuracy)
 

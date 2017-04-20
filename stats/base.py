@@ -1,12 +1,16 @@
 import os
-from stats.utils import fullpath
 import requests
 from bs4 import BeautifulSoup as bsoup
 from time import time
 import datetime
 import re
 from pandas import DataFrame, read_csv, concat
+import json
 
+try:
+    from stats.utils import fullpath
+except ImportError:
+    from utils import fullpath
 
 class Data(object):
 
@@ -35,8 +39,9 @@ class Data(object):
             "specdate": "all", "month": "", "day": "", "last": "", "B1": "Submit"
             }
 
+
     def _abbreviations(self, team_name, src, year):
-        file = fullpath("../info/%s_abbreviations_%s.csv" % (self.league, src))
+        file = fullpath("../conf/%s_abbreviations_%s.csv" % (self.league, src))
         if os.path.isfile(file):
 
             df = read_csv(file)
@@ -123,7 +128,7 @@ class Data(object):
 
                     team2_name = " ".join(team2[:len(team2) - 1])
                     team2_props = self._abbreviations(team_name=team2_name.strip(), src="shrpsports", year=date.year)
-
+                    
                     if loca.strip() == team1_props["abbrev"]:
                         home_team = team1_name
                         home_score = int(team1[len(team1) - 1])
@@ -215,7 +220,7 @@ class Data(object):
                         row.update(gameinfo)
                         row.update(scoreinfo)
                     else:
-                        print("Invalid abbreviation: %s. " % loca.strip())
+                        print("Invalid abbreviation: %s " % loca.strip())
                     if len(team2s) > 1:
                         numots = 0
                         n = re.search('([0-9])', team2s[1])
@@ -223,9 +228,9 @@ class Data(object):
                             numots += 1
                         else:
                             numots += int(n.group(0))
-                        row.update({"overtime": True, "overtime_count": numots})
+                        row.update({"overtime_count": numots})
                     else:
-                        row.update({"overtime": False, "overtime_count": 0})
+                        row.update({"overtime_count": 0})
                     datatable.append(row)
 
             df1 = DataFrame(datatable)
@@ -253,7 +258,10 @@ class Data(object):
         for x in row:
 
             if x.find(".", 0, len(x)) > -1:
-                newrow.append(float(x)/100)
+                if any([i.isalpha() for i in x]):
+                    pass
+                else:
+                    newrow.append(float(x)/100)
             elif x.find(",", 0, len(x)) > -1:
                 i = x.replace(",", "")
                 newrow.append(int(i))
@@ -265,7 +273,7 @@ class Data(object):
                 newrow.append(int(x))
         return newrow
 
-    def attendance(self, start, end):
+    def attendance(self, start, end, save=True):
 
         baseurl = "http://www.espn.com/%s/attendance/_/year" % self.league.lower()
         if int(start) <= 1993 and self.league.lower() in ["nhl", "nba"]:
@@ -305,14 +313,39 @@ class Data(object):
                                      "avg_overall_attend", "pctcap_overall_attend"],
                                     self._retype(itemlst)))
                 itemdict.update({"year": i})
+                
                 data.append(itemdict)
 
         df = DataFrame(data=data)
         cap = []
         for x in df.index:
-            est = df["avg_home_attend"].loc[x]/df["pctcap_home_attend"].loc[x]
-            cap.append(est)
+            if df["pctcap_home_attend"].loc[x] > 0.:
+                est = float(df["avg_home_attend"].loc[x])/df["pctcap_home_attend"]*.925
+                cap.append(est)
+            else:
+                cap.append(0)
+
 
         df.insert(len(df.columns), "est_cap_home", cap)
         self.attendance_data = df
+        if save is True:
+            self.attendance_data.to_csv(fullpath("../data/%s_attendance.csv" % self.league))
+        else:
+            pass
 
+    def team_colors(self):
+        teams = []
+        url = "http://jim-nielsen.com/teamcolors/static/data/teams.json"
+        req = requests.get(url)
+        for i in req.json():
+            print(i)
+            if i["league"] == self.league:
+                try:
+                    colors = ["".join(["#", h]) for h in i["colors"]["hex"]]
+                except KeyError:
+                    colors = ["".join(["rgb(",h.replace(" ",","),")"]) for h in i["colors"]["rgb"]]
+                teams.append(dict(team=i["name"].lower(), colors=colors))
+        with open(fullpath("../conf/%s_team_colormap.json" % self.league), mode="w") as f:
+            json.dump(teams, f)
+            f.close()
+        return teams

@@ -1,0 +1,76 @@
+short_name,abbrev,full_name,city,state_iso,country_iso,startdate,enddate,team_name
+Atlanta,Atl,Atlanta Hawks,atlanta,US-GA,USA,1968,2017,hawks
+Anderson,And,Anderson Packers,anderson,US-IN,USA,1949,1950,packers
+Bal Bullets,BlB,Baltimore Bullets,baltimore,US-MD,USA,1947,1954,bullets
+Baltimore,Bal,Baltimore Bullets,baltimore,US-MD,USA,1963,1973,bullets
+Boston,Bos,Boston Celtics,boston,US-MA,USA,1946,2017,celtics
+Brooklyn,Bkn,Brooklyn Nets,brooklyn,US-NY,USA,2012,2017,nets
+Buffalo,Buf,Buffalo Braves,buffalo,US-NY,USA,1970,1978,braves
+Capital,Cap,Capital Bullets,washington,US-DC,USA,1973,1974,bullets
+Charlotte,Cha,Charlotte Hornets,charlotte,US-NC,USA,1988,2002,hornets
+Charlotte,Cha,Charlotte Hornets,charlotte,US-NC,USA,2014,2017,hornets
+Cha Bobcats,ChB,Charlotte Bobcats,charlotte,US-NC,USA,2004,2014,bobcats
+Chicago,Chi,Chicago Bulls,chicago,US-IL,USA,1966,2017,bulls
+Chi Packers,ChP,Chicago Packers,chicago,US-IL,USA,1961,1962,packers
+Chi Stags,ChS,Chicago Stags,chicago,US-IL,USA,1946,1950,stags
+Chi Zephyrs,ChZ,Chicago Zephyrs,chicago,US-IL,USA,1962,1963,zephyrs
+Cincinnati,Cin,Cincinnati Royals,cincinnati,US-OH,USA,1957,1972,royals
+Cleveland,Cle,Cleveland Cavaliers,cleveland,US-OH,USA,1970,2017,cavaliers
+Cle Rebels,ClR,Cleveland Rebels,cleveland,US-OH,USA,1946,1947,rebels
+Dallas,Dal,Dallas Mavericks,dallas,US-TX,USA,1980,2017,mavericks
+Den Nuggets,DnN,Denver Nuggets,denver,US-CO,USA,1949,1950,nuggets
+Denver,Den,Denver Nuggets,denver,US-CO,USA,1976,2017,nuggets
+Det Falcons,DtF,Detroit Falcons,detroit,US-MI,USA,1946,1947,falcons
+Detroit,Det,Detroit Pistons,detroit,US-MI,USA,1957,2017,pistons
+Ft Wayne,FtW,Ft Wayne Pistons,fort wayne,US-IN,USA,1948,1957,pistons
+Golden State,GS,Golden State Warriors,oakland,US-CA,USA,1971,2017,warriors
+Houston,Hou,Houston Rockets,houston,US-TX,USA,1971,2017,rockets
+Indiana,Ind,Indiana Pacers,indianapolis,US-IN,USA,1976,2017,pacers
+Ind Jets,InJ,Indianapolis Jets,indianapolis,US-IN,USA,1948,1949,jets
+Ind Olympians,InO,Indianapolis Olympians,indianapolis,US-IN,USA,1949,1953,olympians
+Kansas City,KC,Kansas City Kings,kansas city,US-MO,USA,1975,1985,kings
+KC-Omaha,KCO,KC-Omaha Kings,omaha,US-KS,USA,1972,1975,kings
+LA Clippers,LAC,Los Angeles Clippers,los angeles,US-CA,USA,1984,2017,clippers
+LA Lakers,LAL,Los Angeles Lakers,los angeles,US-CA,USA,1960,2017,lakers
+Memphis,Mem,Memphis Grizzlies,memphis,US-TN,USA,2001,2017,grizzlies
+Miami,Mia,Miami Heat,miami,US-FL,USA,1988,2017,heat
+Mil Hawks,MlH,Milwaukee Hawks,milwaukee,US-WI,USA,1951,1955,hawks
+Milwaukee,Mil,Milwaukee Bucks,milwaukee,US-WI,USA,1968,2017,bucks
+Minneapolis,MnL,Minneapolis Lakers,minneapolis,US-MN,USA,1948,1960,lakers
+Minnesota,Min,Minnesota Timberwolves ,minneapolis,US-MN,USA,1989,2017,timberwolves
+New Jersey,NJ,New Jersey Nets,east rutherford,US-NJ,USA,1977,2012,nets
+NO Hornets,NOH,New Orleans Hornets,new orleans,US-LA,USA,2002,2005,hornets
+NO Hornets,NOH,New Orleans Hornets,new orleans,US-LA,USA,2007,2013,hornets
+NO Jazz,NOJ,New Orleans Jazz,new orleans,US-LA,USA,1974,1979,jazz
+New Orleans,NO,New Orleans Pelicans,new orleans,US-LA,USA,2013,2017,pelicans
+New Orl/OkC,NOk,New Orleans/Oklahoma City Hornets,new orleans,US-LA,USA,2005,2007,hornets
+New York,NY,New York Knicks,new york city,US-NY,USA,1946,2017,knicks
+NY Nets,NYN,New York Nets,new york city,US-NY,USA,1976,1977,nets
+Oklahoma City,OkC,Oklahoma City Thunder,oklahoma city,US-OK,USA,2008,2017,thunder
+Orlando,Orl,Orlando Magic,orlando,US-FL,USA,1989,2017,magic
+Phi Warriors,PhW,Philadelphia Warriors,philadelphia,US-PA,USA,1946,1962,warriors
+Philadelphia,Phi,Philadelphia 76ers,philadelphia,US-PA,USA,1963,2017,76ers
+Phoenix,Pho,Phoenix Suns,phoenix,US-AZ,USA,1968,2017,suns
+Pittsburgh,Pit,Pittsburgh Ironmen,pittsburgh,US-PA,USA,1946,1947,ironmen
+Portland,Por,Portland TrailBlazers,portland,US-OR,USA,1970,2017,trailblazers
+Providence,Pro,Providence Steamrollers,providence,US-RI,USA,1946,1950,steamrollers
+Rochester,Roc,Rochester Royals,rochester,US-NY,USA,1948,1957,royals
+Sacramento,Sac,Sacramento Kings,sacramento,US-CA,USA,1985,2017,kings
+San Antonio,SA,San Antonio Spurs,san antonio,US-CA,USA,1976,2017,spurs
+San Diego,SD,San Diego Clippers,san diego,US-CA,USA,1978,1984,clippers
+San Francisco,SF,San Francisco Warriors,san francisco,US-CA,USA,1962,1971,warriors
+SD Rockets,SDR,San Diego Rockets,san diego,US-CA,USA,1967,1971,rockets
+Seattle,Sea,Seattle SuperSonics,seattle,US-WA,USA,1967,2008,supersonics
+Sheboygan,She,Sheboygan Redskins,sheboygan,US-WI,USA,1949,1950,redskins
+StL Bombers,StB,St Louis Bombers,saint louis,US-MO,USA,1946,1950,bombers
+St Louis,StL,St Louis Hawks,saint louis,US-MO,USA,1955,1968,hawks
+Syracuse,Syr,Syracuse Nationals,syracuse,US-NY,USA,1949,1963,nationals
+Tor Huskies,TrH,Toronto Huskies,toronto,CA-ON,CAN,1946,1947,huskies
+Toronto,Tor,Toronto Raptors,toronto,CA-ON,CAN,1995,2017,raptors
+Tri-Cities,Tri,Tri-Cities Blackhawks,tri-cities,US-WA,USA,1949,1951,blackhawks
+Utah,Uta,Utah Jazz,salt lake city,US-UT,USA,1979,2017,jazz
+Vancouver,Van,Vancouver Grizzlies,vancouver,CA-BC,CAN,1995,2001,grizzlies
+Was Capitols,WsC,Washington Capitols,washington,US-DC,USA,1946,1950,capitols
+Was Bullets,WsB,Washington Bullets,washington,US-DC,USA,1974,1997,bullets
+Washington,Wsh,Washington Wizards,washington,US-DC,USA,1997,2017,wizards
+Waterloo,Wat,Waterloo Hawks,waterloo,US-IA,USA,1949,1950,hawks
